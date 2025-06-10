@@ -65,6 +65,9 @@ publish/
 # Create Git
 git init
 
+# Bind to Github
+git remote add origin https://github.com/LucasHartman/Webservices.git
+
 # add file to git
 git add .
 
