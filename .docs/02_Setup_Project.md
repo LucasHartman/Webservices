@@ -30,6 +30,12 @@ dotnet sln Webservices.sln add My.App.Tests/My.App.Tests.csproj
 dotnet sln Webservices.sln add My.App.Web/My.App.Web.csproj
 ```
 
+## Package
+* Installs:
+```
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.5
+```
+
 ## Git
 * Create git ignore file (windows): `New-Item -Path . -Name ".gitignore" -ItemType "File"`
 * Add to the git ignore file:

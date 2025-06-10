@@ -8,7 +8,7 @@
 * Get ms builder version: `dotnet msbuild *version`
 
 ### **Download**
-* Download SDK: [Download Page](https://dotnet.microsoft.com/en*us/download/dotnet/10.0) > dotnet*install
+* Download SDK: [Download Page](https://dotnet.microsoft.com/en*us/download/dotnet/10.0) > dotnet-install
 * Navigate to Environment Variable: `Window Start Button > Search: View Advance System Setting > Environment Variable > Path`
 * Set Environment Variable: `C:\Program Files\dotnet`
 * Restart VScode
@@ -19,7 +19,7 @@
 ## IDE
 
 ### **Download**
-* Download EDI: [Download Page]([Download Visual Studio Code](https://code.visualstudio.com/download)
+* Download EDI: [Download Page]([Download Visual Studio Code](https://code.visualstudio.com/download))
 
 ### **Extensions**
 * [.NET Install Tool](https://marketplace.visualstudio.com/items?itemName=ms*dotnettools.vscode*dotnet*runtime)
