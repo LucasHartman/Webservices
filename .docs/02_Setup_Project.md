@@ -18,6 +18,7 @@ dotnet add reference ../My.Database/My.Database.csproj
 dotnet add reference ../My.Shared/My.Shared.csproj
 dotnet add reference ../My.App/My.App.csproj
 ```
+* Make My.App.csproj: `Microsoft.NET.Sdk.Web`
 
 ## Solution
 * Create solution: `dotnet new sln -n Webservices`
@@ -31,9 +32,13 @@ dotnet sln Webservices.sln add My.App.Web/My.App.Web.csproj
 ```
 
 ## Package
-* Installs:
+* Install:
 ```
+# My.Database
 dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.5
+
+# My.App
+dotnet add package AutoMapper --version 14.0.0
 ```
 
 ## Git

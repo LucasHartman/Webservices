@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace My.Database.Context;
 
-public class SslDbContext : DbContext
+public class MyDbContext : DbContext
 {
     private readonly IConfiguration _config;
 
-    public SslDbContext(DbContextOptions<SslDbContext> options, IConfiguration config) : base(options)
+    public MyDbContext(DbContextOptions<MyDbContext> options, IConfiguration config) : base(options)
     {
         _config = config;
     }
