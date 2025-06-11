@@ -22,7 +22,7 @@
    * Enter passphrase:
 
      ```
-     Mr-blue-sky-117!
+     *****
      ```
 
 3. **Generate SSH key for your *personal account*:**
@@ -39,7 +39,7 @@
    * Enter passphrase:
 
      ```
-     Mr-dark-sky-117!
+     *****
      ```
 
 ---
@@ -83,7 +83,7 @@ Start-Service ssh-agent
      * Enter passphrase:
 
        ```
-       Mr-blue-sky-117!
+       *****
        ```
 
 2. **For Personal Key:**
@@ -103,7 +103,7 @@ Start-Service ssh-agent
      * Enter passphrase:
 
        ```
-       Mr-dark-sky-117!
+       *****
        ```
 
 ---
@@ -202,3 +202,8 @@ Start-Service ssh-agent
 * Add key again: `ssh-add C:\Users\lucas.hartman\.ssh\id_ed25519_personal`
 * Push: `git push --set-upstream origin main`
 
+# 7. Change SSH Key Passphrases
+```
+ssh-keygen -p -f C:\Users\lucas.hartman\.ssh\id_ed25519_work
+ssh-keygen -p -f C:\Users\lucas.hartman\.ssh\id_ed25519_personal
+```
