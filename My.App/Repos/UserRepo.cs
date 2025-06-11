@@ -12,12 +12,6 @@ namespace My.App.Repos
         private readonly MyDbContext _dbContext;
         private readonly IMapper? _mapper;
 
-        public UserRepo(
-            MyDbContext dbContext)
-        {
-            _dbContext = dbContext;
-            _mapper = null;
-        }
 
         public UserRepo(MyDbContext dbContext, IMapper mapper)
         {

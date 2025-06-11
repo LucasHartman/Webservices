@@ -6,10 +6,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using My.App.Interfaces;
+using My.App.Mappings;
+using My.App.Repos;
 using My.App.Web.Data;
+using My.Database.Context;
 
 namespace My.App.Web
 {
@@ -26,8 +31,24 @@ namespace My.App.Web
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddHttpClient();
+
+            // Register Database
+            services.AddDbContext<MyDbContext>(options =>
+                options.UseSqlite("Data Source=../My.Database/app.db"));
+
+            // Register Profiles
+            services.AddAutoMapper(typeof(UserProfile));
+
+            // Register Repos
+            services.AddScoped<IUserRepo, UserRepo>();
+
+            // Register Services
             services.AddSingleton<WeatherForecastService>();
         }
 
@@ -52,6 +73,7 @@ namespace My.App.Web
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
