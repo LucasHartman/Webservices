@@ -1,76 +1,131 @@
-using Xunit;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using My.Database.Context;
-using My.Database.Models;
 using My.App.Repos;
+using My.Database.Models;
+using AutoMapper;
+using My.App.Dtos;
 
 namespace My.App.Tests
 {
-    public class UserRepoTests
+    public class UserRepoTests : IDisposable
     {
-        private MyDbContext GetInMemoryDbContext()
+        private readonly string _tempDbPath;
+        private readonly MyDbContext _dbContext;
+        private readonly UserRepo _repo;
+
+
+
+        public UserRepoTests()
         {
+            // Create temp DB file
+            var originalDbPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "My.Database", "app.db");
+            _tempDbPath = Path.GetTempFileName();
+            File.Copy(originalDbPath, _tempDbPath, overwrite: true);
+
+            // Setup DbContext using temp DB file
             var options = new DbContextOptionsBuilder<MyDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString()) // Unique DB per test
+                .UseSqlite($"Data Source={_tempDbPath}")
                 .Options;
 
-            var dbContext = new MyDbContext(options);
+            _dbContext = new MyDbContext(options);
+            _dbContext.Database.OpenConnection();
+            _dbContext.Database.EnsureCreated();
 
-            // Seed data if needed
-            dbContext.Users.AddRange(
-                new User { Id = 1, FirstName = "Alice", LastName = "Flower", Email = "alice.flower@example.me", CreatedAt = DateTime.UtcNow.AddDays(-5) },
-                new User { Id = 2, FirstName = "Bob", LastName = "Rock", Email = "bob.rock@example.me", CreatedAt = DateTime.UtcNow }
-            );
-            dbContext.SaveChanges();
-
-            return dbContext;
+            _repo = new UserRepo(_dbContext);
         }
 
         [Fact]
-        public async Task GetAllUsersAsync_ReturnsAllUsers()
+        public async Task GetAllUsersAsync()
         {
-            // Arrange
-            var dbContext = GetInMemoryDbContext();
-            var repo = new UserRepo(dbContext);
-
             // Act
-            var result = await repo.GetAllUsersAsync();
+            var users = await _repo.GetAllUsersAsync();
 
             // Assert
-            Assert.Equal(2, result.Count);
-        }
+            Assert.NotNull(users);
+            Assert.NotEmpty(users);
+        } // dotnet test --filter "FullyQualifiedName=My.App.Tests.UserRepoTests2.GetAllUsersAsync"
 
         [Fact]
-        public async Task GetUserByIdAsync_ReturnsCorrectUser()
+        public async Task GetUserByIdAsync()
         {
-            var dbContext = GetInMemoryDbContext();
-            var repo = new UserRepo(dbContext);
+            // Act
+            var user = await _repo.GetUserByIdAsync(1);
 
-            var user = await repo.GetUserByIdAsync(1);
-            Assert.Equal("Alice", user.FirstName);
-        }
+            // Assert
+            Assert.Equal("admin@example.com", user.Email);
+            Assert.Equal(UserRole.Admin, user.Role);
+        } // dotnet test --filter "FullyQualifiedName=My.App.Tests.UserRepoTests2.GetUserByIdAsync"
 
         [Fact]
-        public async Task InsertUserAsync_AddsUserCorrectly()
+        public async Task InsertUserAsync()
         {
-            var dbContext = GetInMemoryDbContext();
-            var repo = new UserRepo(dbContext);
-
-            var newUser = new User
+            // Arrange
+            var user = new User
             {
-                FirstName = "Charlie",
-                LastName = "Cloud",
-                Email = "charlie-cloud@example.me",
+                Email = "test-user@example.com",
+                FirstName = "Test",
+                LastName = "User",
+                Role = UserRole.User,
                 CreatedAt = DateTime.UtcNow
             };
 
-            var addedUser = await repo.InsertUserAsync(newUser);
+            // Act
+            var addedUser = await _repo.InsertUserAsync(user);
 
-            Assert.Equal(3, addedUser.Id); // assuming 2 users already seeded
-            Assert.Equal("Charlie", addedUser.FirstName);
+            // Assert
+            Assert.True(addedUser.Id > 1);
+            Assert.Equal("test-user@example.com", addedUser.Email);
+        } // dotnet test --filter "FullyQualifiedName=My.App.Tests.UserRepoTests2.InsertUserAsync"
+
+        [Fact]
+        public async Task UpdateUserAsync()
+        {
+            // Arrange
+            var user = new User
+            {
+                Id = 1,
+                Email = "update-user@example.com",
+                FirstName = "Update",
+                LastName = "User",
+                Role = UserRole.User,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Act
+            var addedUser = await _repo.UpdateUserAsync(user);
+
+            // Assert
+            Assert.Equal("update-user@example.com", addedUser.Email);
+        } // dotnet test --filter "FullyQualifiedName=My.App.Tests.UserRepoTests2.UpdateUserAsync"
+
+        public void Dispose()
+        {
+            if (_dbContext != null)
+            {
+                _dbContext.Database.CloseConnection();
+                _dbContext.Dispose();
+            }
+
+            int retries = 5;
+            while (retries > 0)
+            {
+                try
+                {
+                    if (File.Exists(_tempDbPath))
+                    {
+                        File.Delete(_tempDbPath);
+                    }
+                    break;  // success
+                }
+                catch (IOException)
+                {
+                    retries--;
+                    System.Threading.Thread.Sleep(100);  // wait 100 ms before retrying
+                }
+            }
         }
+        
+
+
     }
 }

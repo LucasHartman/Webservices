@@ -9,11 +9,13 @@ public class User
     public int Id { get; set; }
 
     [EmailAddress]
-    [StringLength(256)]
+    [StringLength(32)]
     public required string Email { get; set; } // Mail address and username.
 
+    [StringLength(32)]
     public required string FirstName { get; set; }
 
+    [StringLength(32)]
     public required string LastName { get; set; }
 
     [Column("RoleId")]

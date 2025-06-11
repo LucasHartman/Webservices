@@ -39,7 +39,7 @@ dotnet add package Microsoft.EntityFrameworkCore.Sqlite
 dotnet add package Microsoft.EntityFrameworkCore.Tools
 
 # My.App
-dotnet add package AutoMapper --version 14.0.0
+dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
 
 # My.App.Tests
 dotnet add package Microsoft.EntityFrameworkCore.InMemory

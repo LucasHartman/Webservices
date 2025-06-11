@@ -8,9 +8,8 @@ namespace My.App.Mappings
     {
         public UserProfile()
         {
-            CreateMap<User, UserIndexDto>();
-            CreateMap<User, UserFormDto>();
-            CreateMap<UserFormDto, User>();
+            CreateMap<User, UserDto>();
+            CreateMap<UserDto, User>();
         }
     }
 }
