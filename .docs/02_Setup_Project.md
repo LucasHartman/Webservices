@@ -35,10 +35,25 @@ dotnet sln Webservices.sln add My.App.Web/My.App.Web.csproj
 * Install:
 ```
 # My.Database
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 9.0.5
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet add package Microsoft.EntityFrameworkCore.Tools
 
 # My.App
 dotnet add package AutoMapper --version 14.0.0
+
+# My.App.Tests
+dotnet add package Microsoft.EntityFrameworkCore.InMemory
+dotnet add package Microsoft.EntityFrameworkCore
+```
+
+## Sqlite
+* Commands:
+```
+# Enable EF Core tools
+dotnet tool install --global dotnet-ef
+
+# Create and apply a migration
+
 ```
 
 ## Git

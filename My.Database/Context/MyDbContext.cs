@@ -8,14 +8,21 @@ public class MyDbContext : DbContext
 {
     private readonly IConfiguration _config;
 
-    public MyDbContext(DbContextOptions<MyDbContext> options, IConfiguration config) : base(options)
+    public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
     {
-        _config = config;
     }
 
 
-
     #region Methods
+
+    protected override void OnConfiguring(DbContextOptionsBuilder options)
+{
+    if (!options.IsConfigured)
+    {
+        options.UseSqlite("Data Source=app.db");
+    }
+}
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,12 +34,31 @@ public class MyDbContext : DbContext
             .WithOne(a => a.User)
             .HasForeignKey<UserActivation>(a => a.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Seed Test Data
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = 1,
+        Email = "admin@example.com",
+        FirstName = "Admin",
+        LastName = "User",
+        Role = UserRole.Admin,
+        CreatedAt = new DateTime(2025, 01, 01, 0, 0, 0, DateTimeKind.Utc)
+            }
+        );
+
+        modelBuilder.Entity<UserActivation>().HasData(
+            new UserActivation
+            {
+                UserId = 1,
+                ActivationToken = "test-token-123",
+                ActivationTokenExpiration = new DateTime(2025, 01, 08, 0, 0, 0, DateTimeKind.Utc)
+            }
+        );
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlite("Filename=MyDatabase.db");
-    }
+
 
     #endregion
 

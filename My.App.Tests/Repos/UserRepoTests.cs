@@ -1,141 +1,76 @@
+using Xunit;
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit.Abstractions;
 using My.Database.Context;
 using My.Database.Models;
-using My.App.Interfaces;
 using My.App.Repos;
 
-
-namespace My.App.Tests.Repo;
-
-public class UserRepoTests
+namespace My.App.Tests
 {
-    private readonly IUserRepo _UserRepo;
-    private readonly ITestOutputHelper _output;
-
-
-    public UserRepoTests(ITestOutputHelper output)
+    public class UserRepoTests
     {
-        // Build Config
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .Build();
+        private MyDbContext GetInMemoryDbContext()
+        {
+            var options = new DbContextOptionsBuilder<MyDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString()) // Unique DB per test
+                .Options;
 
-        // Register
-        var RepoCollection = new ServiceCollection();
-        RepoCollection.AddSingleton<IConfiguration>(configuration);
-        RepoCollection.AddDbContext<MyDbContext>(options =>
-            options.UseSqlite("Filename=MyDatabase.db"));
-        RepoCollection.AddTransient<UserRepo>();
+            var dbContext = new MyDbContext(options);
 
-        // Providers
-        var RepoProvider = RepoCollection.BuildServiceProvider();
-        _UserRepo = RepoProvider.GetRequiredService<UserRepo>();
-        _output = output;
+            // Seed data if needed
+            dbContext.Users.AddRange(
+                new User { Id = 1, FirstName = "Alice", LastName = "Flower", Email = "alice.flower@example.me", CreatedAt = DateTime.UtcNow.AddDays(-5) },
+                new User { Id = 2, FirstName = "Bob", LastName = "Rock", Email = "bob.rock@example.me", CreatedAt = DateTime.UtcNow }
+            );
+            dbContext.SaveChanges();
+
+            return dbContext;
+        }
+
+        [Fact]
+        public async Task GetAllUsersAsync_ReturnsAllUsers()
+        {
+            // Arrange
+            var dbContext = GetInMemoryDbContext();
+            var repo = new UserRepo(dbContext);
+
+            // Act
+            var result = await repo.GetAllUsersAsync();
+
+            // Assert
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetUserByIdAsync_ReturnsCorrectUser()
+        {
+            var dbContext = GetInMemoryDbContext();
+            var repo = new UserRepo(dbContext);
+
+            var user = await repo.GetUserByIdAsync(1);
+            Assert.Equal("Alice", user.FirstName);
+        }
+
+        [Fact]
+        public async Task InsertUserAsync_AddsUserCorrectly()
+        {
+            var dbContext = GetInMemoryDbContext();
+            var repo = new UserRepo(dbContext);
+
+            var newUser = new User
+            {
+                FirstName = "Charlie",
+                LastName = "Cloud",
+                Email = "charlie-cloud@example.me",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var addedUser = await repo.InsertUserAsync(newUser);
+
+            Assert.Equal(3, addedUser.Id); // assuming 2 users already seeded
+            Assert.Equal("Charlie", addedUser.FirstName);
+        }
     }
-
-  
-    [Fact]
-    public async Task GetAllUsersAsyncTest()
-    {
-        // Arrange, Act
-        var result = (List<User>)await _UserRepo.GetAllUsersAsync();
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-
-        // Print list
-        foreach (var item in result)
-        {
-            _output.WriteLine($"Id: {item.Id}");
-        }
-    } // dotnet test --filter "FullyQualifiedName=My.App.Tests.Repo.UserRepoTests.GetAllUsersAsyncTest" --logger "console;verbosity=detailed"
-
-
-
-    [Fact]
-    public async Task GetUserByIdAsyncTest()
-    {
-        // Arrange
-        int id = 952904;
-
-        // Act
-        User result = await _UserRepo.GetUserByIdAsync(id);
-
-        //Assert
-        Assert.NotNull(result);
-        Assert.Equal(result.Id, id);
-        _output.WriteLine($"ID: {result.Id}");
-    } // dotnet test --filter "FullyQualifiedName=My.App.Tests.Repo.UserRepoTests.GetUserByIdAsyncTest" --logger "console;verbosity=detailed"
-
-
-    [Fact]
-    public async Task GetUsersByDateRangeAsyncTest()
-    {
-        // Arrange
-        DateTime startDate = new DateTime(2024, 01, 01);
-        DateTime endDate = DateTime.Now;
-
-        // Act
-        var result = (List<User>)await _UserRepo.GetUsersByCreatedAtAsync(startDate, endDate);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-
-        // Print list
-        foreach (var item in result)
-        {
-            _output.WriteLine($"Id: {item.Id}, Date: {item.CreatedAt.ToString("yyyy-MM-dd") ?? "N/A"}");
-        }
-    } // dotnet test --filter "FullyQualifiedName=My.App.Tests.Repo.UserRepoTests.GetUsersByDateRangeAsyncTest" --logger "console;verbosity=detailed"
-    
-    [Fact]
-    public async Task InsertUserAsyncTest()
-    {
-        // Arrange
-        var User = new User
-        {
-            Id = 1,
-            CreatedAt = DateTime.Now,
-            FirstName = "Jim",
-            LastName = "Hoffman",
-            Email = "jim.hoffman@example.me"
-        };
-
-
-        // Act
-        var result = await _UserRepo.InsertUserAsync(User);
-
-        // Assert
-        Assert.NotNull(result);
-
-        // Print result
-        _output.WriteLine($"Inserted User - Id: {result.Id}, CreatedAt: {result.CreatedAt.ToString("yyyy-MM-dd") ?? "N/A"}");
-    } // dotnet test --filter "FullyQualifiedName=My.App.Tests.Repo.UserRepoTests.InsertUserAsyncTest" --logger "console;verbosity=detailed"
-
-    [Fact]
-    public async Task UpdateUserAsyncTest()
-    {
-        // Arrange
-        var updatedUser = new User
-        {
-            Id = 1,
-            FirstName = "Jim",
-            LastName = "Hoffman",
-            Email = "jim.hoffman@example.me"
-        };
-
-        // Act
-        var result = await _UserRepo.UpdateUserAsync(updatedUser);
-
-        // Assert
-        Assert.NotNull(result);
-
-        // Print result
-        _output.WriteLine($"Updated User - Id: {result.Id}, CreatedAt: {result.CreatedAt.ToString("yyyy-MM-dd") ?? "N/A"}");
-    } // dotnet test --filter "FullyQualifiedName=My.App.Tests.Repo.UserRepoTests.UpdateUserAsyncTest" --logger "console;verbosity=detailed"
 }

@@ -18,7 +18,7 @@ namespace My.App
 
             // Register DbContext with SQL Server
             builder.Services.AddDbContext<MyDbContext>(options =>
-                options.UseSqlite("Filename=MyDatabase.db"));
+                options.UseSqlite("Filename=App.db"));
 
             // Register Repositories
             builder.Services.AddScoped<IUserRepo, UserRepo>();
