@@ -10,7 +10,8 @@ dotnet new classlib -n My.Database
 dotnet new classlib -n My.Shared
 dotnet new console -n My.App
 dotnet new xunit -o My.App.Tests
-dotnet new webapi -n My.App.Web
+#dotnet new webapi -n My.App.Web
+dotnet new blazorserver -n My.App.Web
 ```
 * Add project references:
 ```
